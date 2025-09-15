@@ -14,6 +14,18 @@ class TestHTMLNode(unittest.TestCase):
             ' class="greeting" href="https://boot.dev"'
         )
     
+    def test_to_html_props_2(self):
+        node = HTMLNode(
+            "p",
+            "TOOL rocks",
+            None,
+            {"id": "body", "href": "https://tool.com"},
+        )
+        self.assertNotEqual(
+            node.props_to_html(),
+            'id="body" href="https://tool.com"'
+        )
+
     def test_values(self):
         node = HTMLNode(
             "div",
@@ -41,7 +53,7 @@ class TestHTMLNode(unittest.TestCase):
         )
         self.assertEqual(
             node.__repr__(),
-            "HTMLNode(p, What a strange world, children: None, {'class': 'primary'})"
+            "HTMLNode(tag: p, value: What a strange world, children: None, props: {'class': 'primary'})"
         )
     
     def test_leaf_to_html_p(self):
