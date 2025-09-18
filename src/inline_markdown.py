@@ -29,13 +29,38 @@ def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
 
-def split_nodes_images(old_nodes):
+def split_nodes_image(old_nodes):
     new_nodes = []
-    image_alt = extract_markdown_images(old_nodes.text)
-    print(image_alt)
-
-node = TextNode(
-    "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
-    TextType.TEXT,
-)
-split_nodes_images(node)
+    for old_node in old_nodes:
+        extracted_markdown = extract_markdown_images(old_node.text)
+        if extracted_markdown == []:
+            new_nodes.append(old_node)
+            continue
+        remaining = old_node.text
+        for (alt, link) in extracted_markdown:
+            left, right = remaining.split(f"![{alt}]({link})", 1)
+            if left:
+                new_nodes.append(TextNode(left, TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.IMAGE, link))
+            remaining = right
+        if remaining:
+            new_nodes.append(TextNode(remaining, TextType.TEXT))
+    return new_nodes
+         
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        extracted_markdown = extract_markdown_links(old_node.text)
+        if extracted_markdown == []:
+            new_nodes.append(old_node)
+            continue
+        remaining = old_node.text
+        for (name, link) in extracted_markdown:
+            left, right = remaining.split(f"[{name}]({link})", 1)
+            if left:
+                new_nodes.append(TextNode(left, TextType.TEXT))
+            new_nodes.append(TextNode(name, TextType.LINK, link))
+            remaining = right
+        if right:
+            new_nodes.append(TextNode(right, TextType.TEXT))
+    return new_nodes
