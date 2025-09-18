@@ -28,3 +28,14 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
+
+def split_nodes_images(old_nodes):
+    new_nodes = []
+    image_alt = extract_markdown_images(old_nodes.text)
+    print(image_alt)
+
+node = TextNode(
+    "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+    TextType.TEXT,
+)
+split_nodes_images(node)
