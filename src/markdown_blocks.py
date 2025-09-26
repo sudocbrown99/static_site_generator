@@ -136,3 +136,18 @@ def quote_to_html_node(block):
     content = " ".join(new_lines)
     children = text_to_children(content)
     return ParentNode("blockquote", children)
+
+def extract_title(markdown):
+    mblocks = markdown_to_blocks(markdown)
+    for block in mblocks:
+        if block_to_block_type(block) == BlockType.HEADING:
+            level = 0
+            for char in block:
+                if char == "#":
+                    level += 1
+                else:
+                    break
+            if level + 1 >= len(block):
+                raise ValueError(f"invalid heading level: {level}")
+            text = block[level + 1 :]
+            return text
