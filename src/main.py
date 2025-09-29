@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 import os
 import shutil
@@ -27,7 +28,7 @@ def extract_title(markdown):
             return block[2:].strip()
     raise ValueError("No h1 found")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     
     with open(from_path, "r", encoding="utf-8") as f:
@@ -40,31 +41,34 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(md)
     page = tpl.replace("{{ Title }}", title).replace("{{ Content }}", html)
 
+    page = page.replace('href="/', f'href="{basepath}')
+    page = page.replace('src="/', f'src="{basepath}')
+
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
     with open(dest_path, "w", encoding="utf-8") as f:
         f.write(page)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     for item in os.listdir(dir_path_content):
         full_path = os.path.join(dir_path_content, item)
         if os.path.isdir(full_path):
             dest_subdir = os.path.join(dest_dir_path, item)
-            generate_pages_recursive(full_path, template_path, dest_subdir)
+            generate_pages_recursive(full_path, template_path, dest_subdir, basepath)
         elif full_path.endswith(".md"):
             dest_file = os.path.join(dest_dir_path, os.path.splitext(item)[0] + ".html")
-            generate_page(full_path, template_path, dest_file)
+            generate_page(full_path, template_path, dest_file, basepath)
 
 
 def main():
-    if os.path.exists("./public"):
-        shutil.rmtree("./public")
-        os.mkdir("./public")
-    else:    
-        os.mkdir("./public")
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    out_dir = "./docs"
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+    os.mkdir(out_dir)
     
-    copy_static_dir("./static", "./public")
-    generate_pages_recursive("content/", "template.html", "public/")
+    copy_static_dir("./static", out_dir)
+    generate_pages_recursive("content/", "template.html", out_dir, basepath)
 
     
 main()
